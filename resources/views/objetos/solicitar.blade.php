@@ -56,13 +56,20 @@
             padding: 1.5rem max(1.25rem, calc((100% - 900px) / 2));
         }
 
+        .header-main {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+        }
+
         header nav {
             display: flex;
-            justify-content: flex-end;
+            flex: 0 0 auto;
         }
 
         header h1 {
-            margin: 1.5rem 0 0.5rem;
+            margin: 0 0 0.5rem;
             font-size: clamp(2rem, 5vw, 2.75rem);
         }
 
@@ -187,6 +194,12 @@
         }
 
         @media (max-width: 560px) {
+            .header-main {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
             .fields {
                 grid-template-columns: 1fr;
             }
@@ -195,11 +208,15 @@
 </head>
 <body>
     <header>
-        <nav aria-label="Navegação principal">
-            <a href="{{ route('objetos.index') }}">Voltar ao mural</a>
-        </nav>
-        <h1>Solicitar objeto</h1>
-        <p>Confira os dados do item que você deseja requerer.</p>
+        <div class="header-main">
+            <div>
+                <h1>Solicitar objeto</h1>
+                <p>Confira os dados do item que você deseja requerer.</p>
+            </div>
+            <nav aria-label="Navegação principal">
+                <a href="{{ route('objetos.index') }}">Voltar ao mural</a>
+            </nav>
+        </div>
     </header>
 
     <main>
