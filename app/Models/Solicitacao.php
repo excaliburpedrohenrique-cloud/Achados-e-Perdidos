@@ -9,6 +9,24 @@ class Solicitacao extends Model
 {
     protected $table = 'solicitacaos';
 
+    protected $fillable = [
+        'usuario_id',
+        'objeto_id',
+        'nome',
+        'cpf',
+        'email',
+        'telefone',
+        'mensagem',
+        'status',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'cpf' => 'encrypted',
+        ];
+    }
+
     public function usuario(): BelongsTo
     {
         return $this->belongsTo(User::class, 'usuario_id');
