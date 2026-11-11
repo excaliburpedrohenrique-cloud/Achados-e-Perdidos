@@ -221,6 +221,8 @@
                 <p class="description">{{ $objeto->descricao ?: 'Sem descrição informada.' }}</p>
                 @if (session('sucesso'))
                     <p class="notice" role="status">{{ session('sucesso') }}</p>
+                @elseif (session('erro'))
+                    <p class="notice" role="alert">{{ session('erro') }}</p>
                 @else
                     <p class="notice">
                         Seus dados serão usados pela Secretaria para verificar e acompanhar esta solicitação. O CPF será armazenado de forma criptografada.

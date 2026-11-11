@@ -398,7 +398,7 @@
     <header>
         <div class="header-main">
             <div>
-                <h1>Mural de objetos</h1>
+                <h1>Achados e Perdidos</h1>
                 <p>Encontre ou divulgue objetos perdidos na escola.</p>
             </div>
             <nav aria-label="Navegação principal">
@@ -412,6 +412,7 @@
                         <a class="button" href="{{ route('login') }}">Acesso da Secretaria</a>
                     @endauth
                     @if (auth()->user()?->tipo === 'Secretaria')
+                        <a class="button" href="{{ route('solicitacoes.index') }}">Solicitações</a>
                         <a class="button" href="{{ route('objetos.create') }}">Cadastrar objeto</a>
                     @endif
                 </div>
@@ -443,7 +444,7 @@
                             <div class="card-content">
                                 <div class="card-heading">
                                     <span class="category">{{ $objeto->categoria->nome }}</span>
-                                    @if (auth()->user()?->tipo !== 'Secretaria' && $objeto->status === 'disponível')
+                                    @if (auth()->user()?->tipo !== 'Secretaria')
                                         <a class="request-button" href="{{ route('objetos.solicitar', $objeto) }}">Solicitar</a>
                                     @endif
                                 </div>

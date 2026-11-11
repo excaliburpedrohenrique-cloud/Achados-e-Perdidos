@@ -19,6 +19,15 @@ Route::post('/objetos/{objeto}/solicitar', [SolicitacaoController::class, 'store
     ->name('objetos.solicitacoes.store');
 
 Route::middleware(['auth', 'secretaria'])->group(function () {
+    Route::get('/solicitacoes', [SolicitacaoController::class, 'index'])
+        ->name('solicitacoes.index');
+
+    Route::patch('/solicitacoes/{solicitacao}/aprovar', [SolicitacaoController::class, 'approve'])
+        ->name('solicitacoes.aprovar');
+
+    Route::patch('/solicitacoes/{solicitacao}/recusar', [SolicitacaoController::class, 'reject'])
+        ->name('solicitacoes.recusar');
+
     Route::get('/objetos/criar', [ObjetoController::class, 'create'])
         ->name('objetos.create');
 

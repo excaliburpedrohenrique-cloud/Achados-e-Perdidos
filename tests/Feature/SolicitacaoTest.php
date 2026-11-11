@@ -93,6 +93,94 @@ class SolicitacaoTest extends TestCase
         $this->assertDatabaseCount('solicitacaos', 0);
     }
 
+    public function test_only_secretaria_can_view_the_requests_page(): void
+    {
+        $this->get(route('solicitacoes.index'))
+            ->assertRedirect(route('login'));
+
+        $student = User::factory()->create();
+
+        $this->actingAs($student)
+            ->get(route('solicitacoes.index'))
+            ->assertForbidden();
+
+        $secretaria = User::factory()->create();
+        $secretaria->forceFill(['tipo' => 'Secretaria'])->save();
+
+        $this->actingAs($secretaria)
+            ->get(route('solicitacoes.index'))
+            ->assertOk()
+            ->assertSee('Pedidos recebidos');
+    }
+
+    public function test_secretaria_can_approve_request_and_remove_object_from_mural(): void
+    {
+        $objeto = $this->createAvailableObject();
+        $solicitacao = $this->createPendingRequest($objeto);
+        $outraSolicitacao = $this->createPendingRequest($objeto, 'outro@example.com');
+        $secretaria = User::factory()->create();
+        $secretaria->forceFill(['tipo' => 'Secretaria'])->save();
+
+        $this->actingAs($secretaria)
+            ->get(route('solicitacoes.index'))
+            ->assertOk()
+            ->assertSee('Estudante Exemplo')
+            ->assertSee('12345678900')
+            ->assertSee('estudante@example.com')
+            ->assertSee('Aprovar retirada');
+
+        $this->actingAs($secretaria)
+            ->patch(route('solicitacoes.aprovar', $solicitacao))
+            ->assertRedirect()
+            ->assertSessionHas('sucesso');
+
+        $this->assertSame('aprovada', $solicitacao->fresh()->status);
+        $this->assertSame('recusada', $outraSolicitacao->fresh()->status);
+        $this->assertSame('devolvido', $objeto->fresh()->status);
+
+        $this->get(route('objetos.index'))
+            ->assertOk()
+            ->assertDontSee('Garrafa azul');
+
+        $this->actingAs($secretaria)
+            ->get(route('solicitacoes.index'))
+            ->assertOk()
+            ->assertSee('Garrafa azul')
+            ->assertSee('Aprovada')
+            ->assertSee('Objeto retirado e removido do mural.');
+    }
+
+    public function test_secretaria_can_reject_a_pending_request(): void
+    {
+        $solicitacao = $this->createPendingRequest($this->createAvailableObject());
+        $secretaria = User::factory()->create();
+        $secretaria->forceFill(['tipo' => 'Secretaria'])->save();
+
+        $this->actingAs($secretaria)
+            ->patch(route('solicitacoes.recusar', $solicitacao))
+            ->assertRedirect()
+            ->assertSessionHas('sucesso');
+
+        $this->assertSame('recusada', $solicitacao->fresh()->status);
+    }
+
+    public function test_approved_object_no_longer_accepts_requests(): void
+    {
+        $objeto = $this->createAvailableObject();
+        $objeto->update(['status' => 'devolvido']);
+        $this->createPendingRequest($objeto, 'aprovada@example.com', 'aprovada');
+
+        $this->get(route('objetos.solicitar', $objeto))
+            ->assertNotFound();
+
+        $this->post(route('objetos.solicitacoes.store', $objeto), [
+            'nome' => 'Estudante Exemplo',
+            'cpf' => '12345678900',
+            'email' => 'estudante@example.com',
+            'telefone' => '11999991234',
+        ])->assertNotFound();
+    }
+
     private function createAvailableObject(): Objeto
     {
         $categoria = Categoria::create([
@@ -105,6 +193,18 @@ class SolicitacaoTest extends TestCase
             'titulo' => 'Garrafa azul',
             'local' => 'Pátio',
             'turno' => 'Tarde',
+        ]);
+    }
+
+    private function createPendingRequest(Objeto $objeto, string $email = 'estudante@example.com', string $status = 'pendente'): Solicitacao
+    {
+        return Solicitacao::create([
+            'objeto_id' => $objeto->id,
+            'nome' => 'Estudante Exemplo',
+            'cpf' => '12345678900',
+            'email' => $email,
+            'telefone' => '11999991234',
+            'status' => $status,
         ]);
     }
 }

@@ -13,6 +13,7 @@ class ObjetoController extends Controller
     public function index(): View
     {
         $objetos = Objeto::with('categoria')
+            ->where('status', 'disponível')
             ->latest()
             ->paginate(12);
 
@@ -21,6 +22,8 @@ class ObjetoController extends Controller
 
     public function solicitar(Objeto $objeto): View
     {
+        abort_unless($objeto->status === 'disponível', 404);
+
         $objeto->load('categoria');
 
         return view('objetos.solicitar', compact('objeto'));

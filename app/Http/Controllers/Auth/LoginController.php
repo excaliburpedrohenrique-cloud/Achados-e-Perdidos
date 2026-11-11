@@ -39,7 +39,7 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('objetos.create'));
+        return redirect()->intended(route('objetos.index'));
     }
 
     public function destroy(Request $request): RedirectResponse

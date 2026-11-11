@@ -72,7 +72,7 @@ class SecretariaAccessTest extends TestCase
             'email' => $user->email,
             'password' => 'password',
         ])
-            ->assertRedirect(route('objetos.create'));
+            ->assertRedirect(route('objetos.index'));
 
         $this->assertAuthenticatedAs($user);
     }

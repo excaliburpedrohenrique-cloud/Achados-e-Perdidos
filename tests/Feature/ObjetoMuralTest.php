@@ -53,6 +53,27 @@ class ObjetoMuralTest extends TestCase
             ->assertSee('Acesso da Secretaria');
     }
 
+    public function test_mural_does_not_show_returned_objects(): void
+    {
+        $categoria = Categoria::create([
+            'nome' => 'Objeto pessoal',
+            'descricao' => 'Objetos pessoais encontrados ou perdidos.',
+        ]);
+
+        Objeto::create([
+            'categoria_id' => $categoria->id,
+            'titulo' => 'Objeto retirado',
+            'local' => 'Pátio',
+            'turno' => 'Tarde',
+            'status' => 'devolvido',
+        ]);
+
+        $this->get(route('objetos.index'))
+            ->assertOk()
+            ->assertSee('Ainda não há objetos no mural')
+            ->assertDontSee('Objeto retirado');
+    }
+
     public function test_mural_displays_an_uploaded_object_photo(): void
     {
         Storage::fake('public');
@@ -149,6 +170,8 @@ class ObjetoMuralTest extends TestCase
         $this->actingAs($secretaria)
             ->get(route('objetos.index'))
             ->assertOk()
-            ->assertDontSee('Solicitar');
+            ->assertDontSee('Solicitar')
+            ->assertSee(route('solicitacoes.index'), false)
+            ->assertSee('Solicitações');
     }
 }
